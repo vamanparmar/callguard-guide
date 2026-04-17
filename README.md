@@ -5,383 +5,407 @@
 ![License](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)
 ![Contributions Welcome](https://img.shields.io/badge/Contributions-Welcome-brightgreen?style=flat-square)
 
-> **Disclaimer:** This guide is strictly for **educational and personal security purposes**. The information provided here is intended to help you **protect your own device**. Unauthorized access to another person's phone or configuring settings on someone else's device without their explicit consent is **illegal** under cybercrime and privacy laws in most countries.
-> **Disclaimer:** This guide is strictly for **educational and personal security purposes**. The information provided here is intended to help you secure **your own line and devices**. Unauthorized access to another person's phone or account without explicit consent may violate cybercrime and privacy laws.
+> **Disclaimer:** This guide is strictly for **educational and personal security purposes**. The information is intended to help you protect and audit **your own device and line**. Configuring settings on someone else's device without their explicit consent is **illegal** under cybercrime and privacy laws in most jurisdictions.
 
 ---
 
 ## 📖 Table of Contents
 
-- [What is Call Forwarding?](#what-is-call-forwarding)
-- [How Call Forwarding Works](#how-call-forwarding-works)
-- [Quick Reference — All Codes](#quick-reference--all-codes)
-- [Types of Call Forwarding](#types-of-call-forwarding)
-- [How to Check If Your Calls Are Being Forwarded](#how-to-check-if-your-calls-are-being-forwarded)
-- [Understanding the Results](#understanding-the-results)
-- [How to Disable Call Forwarding](#how-to-disable-call-forwarding)
-- [Android vs iOS — Important Differences](#android-vs-ios--important-differences)
-- [Common Carrier Voicemail Numbers (India)](#common-carrier-voicemail-numbers-india)
-- [When to Contact Your Carrier](#when-to-contact-your-carrier)
-- [Final Security Tips](#final-security-tips)
-- [Contributing](#contributing)
-- [Why this guide exists](#-why-this-guide-exists)
-- [Who this is for](#-who-this-is-for)
-- [What is call forwarding?](#-what-is-call-forwarding)
-- [How call forwarding works](#-how-call-forwarding-works)
-- [Quick reference — check and cancel codes](#-quick-reference--check-and-cancel-codes)
-- [Types of call forwarding](#-types-of-call-forwarding)
-- [Step-by-step: check your line in 2 minutes](#-step-by-step-check-your-line-in-2-minutes)
-- [How to read USSD results](#-how-to-read-ussd-results)
-- [How to disable forwarding safely](#-how-to-disable-forwarding-safely)
-- [Android vs iOS differences](#-android-vs-ios-differences)
-- [Troubleshooting guide](#-troubleshooting-guide)
-- [When to contact your carrier](#-when-to-contact-your-carrier)
-- [India voicemail quick list (example)](#-india-voicemail-quick-list-example)
-- [Hardening checklist](#-hardening-checklist)
+- [Why This Guide Exists](#-why-this-guide-exists)
+- [Who This Is For](#-who-this-is-for)
+- [What Is Call Forwarding?](#-what-is-call-forwarding)
+- [How Call Forwarding Works](#-how-call-forwarding-works)
+- [Technical Deep Dive — USSD & GSM Internals](#-technical-deep-dive--ussd--gsm-internals)
+- [Types of Call Forwarding](#-types-of-call-forwarding)
+- [Quick Reference — All Codes](#-quick-reference--all-codes)
+- [Step-by-Step: Check Your Line in 2 Minutes](#-step-by-step-check-your-line-in-2-minutes)
+- [How to Read USSD Results](#-how-to-read-ussd-results)
+- [How to Disable Forwarding Safely](#-how-to-disable-forwarding-safely)
+- [⚠️ Attack Scenario Modeling](#%EF%B8%8F-attack-scenario-modeling)
+- [Android vs iOS Differences](#-android-vs-ios-differences)
+- [Troubleshooting Guide](#-troubleshooting-guide)
+- [When to Contact Your Carrier](#-when-to-contact-your-carrier)
+- [India Voicemail Quick List](#-india-voicemail-quick-list)
+- [Hardening Checklist](#-hardening-checklist)
 - [FAQ](#-faq)
 - [Contributing](#-contributing)
-- [Additional resources](#-additional-resources)
+- [Additional Resources](#-additional-resources)
 
 ---
 
-## 📡 What is Call Forwarding?
-## 🎯 Why this guide exists
+## 🎯 Why This Guide Exists
 
-Call forwarding is a **legitimate telecom feature** that redirects incoming calls from your number to another number. While useful in valid scenarios (e.g., forwarding to voicemail), it can also be **misconfigured or abused** if someone gains physical access to your device.
-Call forwarding is useful, but it is also one of the most commonly misunderstood telecom settings. This README helps you:
+Call forwarding is one of the most commonly misunderstood telecom settings. This README helps you:
 
-Understanding how to detect and remove unwanted call forwarding is an important part of **mobile security hygiene**.
-- Understand what each forwarding mode does.
-- Detect unexpected forwarding quickly.
+- Understand what each forwarding mode does at a technical level.
+- Detect unexpected forwarding quickly using standard GSM codes.
 - Disable forwarding with confidence.
+- Recognize real-world attack scenarios that exploit forwarding.
 - Escalate correctly if a carrier-side issue is suspected.
 
 ---
 
-## 🔄 How Call Forwarding Works
-## 👥 Who this is for
+## 👥 Who This Is For
 
-### Normal Call Flow
-```
-- Everyday users who want a fast security check.
-- People who recently shared, repaired, or reset their phone.
+- Everyday users who want a fast personal security check.
+- People who recently shared, repaired, or factory-reset their phone.
 - Anyone investigating missed calls, unexplained voicemail behavior, or suspicious account activity.
+- Students and professionals studying mobile network security.
 
 ---
 
-## 📡 What is call forwarding?
+## 📡 What Is Call Forwarding?
 
-Call forwarding redirects incoming calls from your primary number to a different destination (usually voicemail, another line, or a virtual number).
+Call forwarding is a **legitimate telecom feature** that redirects incoming calls from your primary number to a different destination — usually voicemail, another line, or a virtual number.
 
-It is normally legitimate, but if changed without your knowledge, it can cause:
+It is normally useful, but if changed without your knowledge, it can cause:
 
-- Missed calls you never see.
-- Privacy risks (someone else receiving your calls).
+- Missed calls you never see or hear.
+- Privacy risks (someone else receiving your calls and voicemails).
 - Social-engineering opportunities against your contacts.
+- Account takeover risk when combined with OTP-based authentication.
 
 ---
 
-## 🔄 How call forwarding works
+## 🔄 How Call Forwarding Works
 
-### Normal flow
+### Normal Flow
 
 ```text
 Caller ──────────────────────────► Your Phone 📱
                                     (Rings normally)
 ```
 
-### With Unwanted Call Forwarding Active
-```
-Caller ──────► Network Tower 📶 ──► Forwarded Number ☎️
-                                    (Your phone never rings)
-### Forwarded flow
+### Forwarded Flow
 
 ```text
 Caller ──────► Carrier Network 📶 ──► Forwarded Number ☎️
-                                    (Your phone may not ring)
+                                    (Your phone may not ring at all)
 ```
 
-When call forwarding is active, incoming calls are silently redirected **before they even reach your device** — which means you may never know a call came in.
-Because forwarding is often configured at the carrier/network level, calls can be rerouted before your handset receives them.
+Because forwarding is configured at the **carrier/network level**, calls can be rerouted before your handset ever receives them — making it invisible without an explicit check.
 
 ---
 
-## ⚡ Quick Reference — All Codes
-## ⚡ Quick reference — check and cancel codes
+## 🔬 Technical Deep Dive — USSD & GSM Internals
 
-A one-stop cheat sheet for all check and cancel codes:
-> Enter each code in your dialer and press **Call**.
+### How USSD Works (GSM Signaling)
 
-| Action | Unconditional | Unreachable | Busy |
-|--------|--------------|-------------|------|
-| Action | Unconditional | Unreachable / No signal | Busy |
-|--------|---------------|--------------------------|------|
-| **Check** | `*#21#` | `*#62#` | `*#67#` |
-| **Cancel** | `##21#` | `##62#` | `##67#` |
+**USSD (Unstructured Supplementary Service Data)** is a GSM protocol used to communicate with the carrier's systems in real time. Unlike SMS, USSD sessions are:
 
-> After entering any code, press the **Call/Dial** button (green icon) if the result does not appear automatically.
+- **Synchronous** — the network holds the session open while processing.
+- **Low-latency** — responses typically arrive in under 2 seconds.
+- **Session-based** — the connection closes once the reply is received.
+
+When you dial `*#21#` and press Call, your handset encodes it as a **MMI (Man-Machine Interface)** string, which is transported as a USSD message over the **SS7 (Signaling System 7)** signaling plane — not over voice or data.
+
+```
+Your Handset
+     │  MMI string (*#21#)
+     ▼
+BSS (Base Station Subsystem)
+     │  USSD-Request (GSM MAP)
+     ▼
+MSC (Mobile Switching Centre)
+     │  MAP-Process-USSD-Request
+     ▼
+HLR (Home Location Register)  ◄──── Stores your forwarding rules
+     │  Returns CF status
+     ▼
+Response rendered on your screen
+```
+
+### HLR and VLR — Where Forwarding Lives
+
+| Component | Full Name | Role |
+|-----------|-----------|------|
+| **HLR** | Home Location Register | Permanent subscriber database. Stores all call forwarding rules (CFU, CFB, CFNR) for your number. |
+| **VLR** | Visitor Location Register | Temporary register at the current serving MSC. Copies relevant HLR data when you roam or move. |
+
+> Key insight: Because forwarding rules live in the **HLR**, they persist even if your phone is off, the SIM is removed, or you travel internationally. This is why **physical access to your device alone is enough** to set forwarding that survives a reboot.
+
+### CFU vs CFB vs CFNR — Technical Differences
+
+| Code | Full Name | Trigger Condition | GSM Service Code |
+|------|-----------|-------------------|-----------------|
+| **CFU** | Call Forwarding Unconditional | Every call, immediately, no ringing | SS 21 |
+| **CFB** | Call Forwarding on mobile Busy | You are already on an active call | SS 67 |
+| **CFNR** | Call Forwarding on No Reply | Phone rings but is not answered within a timer (default: 20 sec) | SS 61 / 62 |
+
+> **CFNR** is the most commonly used by carriers for voicemail. **CFU** is the most dangerous — it silently diverts every call without your phone ever ringing.
 
 ---
 
 ## 🔀 Types of Call Forwarding
-## 🔀 Types of call forwarding
 
-| Type | Description | Check Code | Cancel Code |
-|------|-------------|------------|-------------|
-| **Unconditional** | All calls forwarded regardless of phone status | `*#21#` | `##21#` |
-| **Unreachable / No-Answer** | Calls forwarded when phone is off or out of network | `*#62#` | `##62#` |
-| **Busy** | Calls forwarded when you are already on another call | `*#67#` | `##67#` |
-| Type | What it means | Check | Cancel |
-|------|----------------|-------|--------|
-| **Unconditional** | Every incoming call is forwarded immediately | `*#21#` | `##21#` |
-| **Unreachable / No-answer** | Calls forward when phone is off, unreachable, or no signal | `*#62#` | `##62#` |
-| **Busy** | Calls forward while you're already on another call | `*#67#` | `##67#` |
+| Type | What It Means | Check Code | Cancel Code |
+|------|----------------|------------|-------------|
+| **Unconditional (CFU)** | Every incoming call is forwarded immediately | `*#21#` | `##21#` |
+| **Unreachable / No-Answer (CFNR)** | Calls forward when phone is off, out of signal, or unanswered | `*#62#` | `##62#` |
+| **Busy (CFB)** | Calls forward while you're already on another call | `*#67#` | `##67#` |
 
 ---
 
-## 🔍 How to Check If Your Calls Are Being Forwarded
-## ✅ Step-by-step: check your line in 2 minutes
+## ⚡ Quick Reference — All Codes
 
-Open your phone's **dial pad** and enter the following codes one at a time.
+> Enter each code in your dialer and press **Call** (green button).
 
-### ① Check Unconditional Forwarding
-```
-*#21#
-```
-Checks if **all calls** are being forwarded at all times.
+| Action | Unconditional (CFU) | Unreachable / No-Answer (CFNR) | Busy (CFB) |
+|--------|---------------------|-------------------------------|------------|
+| **Check** | `*#21#` | `*#62#` | `*#67#` |
+| **Cancel** | `##21#` | `##62#` | `##67#` |
+
+---
+
+## ✅ Step-by-Step: Check Your Line in 2 Minutes
+
 1. Open your dial pad.
-2. Dial `*#21#` and note the result.
-3. Dial `*#62#` and note the result.
-4. Dial `*#67#` and note the result.
-5. If any unknown number appears, cancel with matching `##` code.
-6. Re-run all `*#` checks to confirm the final state.
+2. Dial `*#21#` — press Call — note the result.
+3. Dial `*#62#` — press Call — note the result.
+4. Dial `*#67#` — press Call — note the result.
+5. If any **unknown number** appears in results, cancel with the matching `##` code.
+6. Re-run all `*#` checks to confirm the cancellation succeeded.
 
-### ② Check Unreachable / No-Answer Forwarding
-```
-*#62#
-```
-Checks if calls are forwarded when your phone is **switched off or has no signal**.
-
-### ③ Check Busy Call Forwarding
-```
-*#67#
-```
-Checks if calls are forwarded when you are **already on a call**.
-Tip: Save screenshots of results before/after changes for records when speaking with carrier support.
+> 💡 **Tip:** Screenshot each result before and after changes. Useful when speaking with carrier support.
 
 ---
 
-## 📊 Understanding the Results
-## 📊 How to read USSD results
+## 📊 How to Read USSD Results
 
 ### ✅ Safe — No Forwarding Active
-### Safe example
 
 ```text
 Voice:    Not forwarded ✅
 Data:     Not forwarded ✅
 Fax:      Not forwarded ✅
 ```
-Voice:    Not Forwarded  ✅
-Messages: Not Forwarded  ✅
-Fax:      Not Forwarded  ✅
-
-### Potentially risky example
-
-```text
-Voice forwarded to: +<country_code><number> ⚠️
-```
-
-This means no call forwarding is currently configured on your line. You are safe.
-Forwarding can still be legitimate (e.g., voicemail), but verify every unfamiliar number.
-
----
 
 ### ⚠️ Forwarding Detected
-## 🛑 How to disable forwarding safely
-
-Run all three cancel codes:
 
 ```text
-##21#
-##62#
-##67#
-```
-Voice Forwarded to: +91XXXXXXXXXX  ⚠️
-
-Then immediately verify with:
-
-```text
-*#21#
-*#62#
-*#67#
+Voice forwarded to: +91XXXXXXXXXX ⚠️
 ```
 
-This means your calls are being redirected. This could be:
-If a rule reappears after cancellation, treat it as a carrier/account issue and escalate.
+This means calls are being redirected. This could be:
 
-- ✅ A **carrier voicemail number** (often legitimate — see carrier list below)
+- ✅ A **carrier voicemail number** (often legitimate — see India list below)
 - ✅ A **number you set yourself** and forgot about
-- ❌ In rare cases, **unauthorized forwarding** set without your knowledge
----
+- ❌ In rarer cases, **unauthorized forwarding** configured without your knowledge
 
-Do not panic — simply follow the steps in the next section to disable it.
-## 📱 Android vs iOS differences
-
-| Feature | Android | iPhone (iOS) |
-|--------|---------|---------------|
-| USSD response behavior | Usually immediate popup | Carrier dependent; may vary |
-| Reliable manual path | Dialer USSD + call settings | **Settings → Phone → Call Forwarding** |
-| Recommendation | Use both USSD + settings for confirmation | Use Settings view first, then test with real call |
+Do not panic — verify the number against known carrier voicemail lists, then disable if unrecognized.
 
 ---
 
-## 🛑 How to Disable Call Forwarding
-## 🧰 Troubleshooting guide
+## 🛑 How to Disable Forwarding Safely
 
-Open your **dial pad**, enter the code, and press **Call**.
-### “Code failed” / “MMI invalid”
-- Retry with strong signal and active SIM.
-- Remove spaces or extra symbols.
-- Some MVNOs/roaming contexts block specific USSD queries.
+Open your dial pad, enter each code, and press **Call**:
 
 ```
-##21#   →  Cancels ALL unconditional call forwarding
-##62#   →  Cancels unreachable / no-answer forwarding
-##67#   →  Cancels busy call forwarding
+##21#   →  Cancels ALL unconditional forwarding (CFU)
+##62#   →  Cancels unreachable / no-answer forwarding (CFNR)
+##67#   →  Cancels busy forwarding (CFB)
 ```
-### “Forwarding turns back on”
-- Check if carrier voicemail auto-enables on unreachable/busy states.
-- Ask carrier to remove all conditional forwarding and voicemail provisioning temporarily.
 
-After entering each code, re-run the corresponding **check code** to confirm forwarding is disabled.
-### “I still miss calls after disabling everything”
-- Test with airplane mode off and Wi-Fi calling on/off.
-- Verify DND, call blocking apps, and spam filters.
-- Place controlled tests from two different networks.
+Immediately re-run the corresponding **check codes** to confirm each rule is removed. If a rule reappears after cancellation, treat it as a carrier/account-level issue and escalate.
 
 ---
 
-## 📱 Android vs iOS — Important Differences
-## 📞 When to contact your carrier
+## ⚠️ Attack Scenario Modeling
+
+Understanding how call forwarding is exploited helps you recognize risks before they affect you.
+
+---
+
+### 🔴 Scenario 1 — Physical Access Attack (30-Second CFU)
+
+```
+Timeline:
+  T+0s   Attacker gains brief physical access to unlocked phone
+  T+10s  Attacker opens dial pad
+  T+15s  Dials *21*<attacker_number># → press Call → CFU activated
+  T+20s  Returns phone. Victim is unaware.
+  T+∞    Every call to victim is silently forwarded to attacker
+```
+
+**Impact:** Victim misses all calls. Attacker can intercept voicemail, OTPs delivered via call, and impersonate the victim to callers.
+
+**Defense:** Screen lock before handing phone to anyone. Run `*#21#` check after any unattended access.
+
+---
+
+### 🔴 Scenario 2 — SIM Swap + CFNR Account Takeover
+
+```
+Attack Chain:
+  Step 1  Attacker social-engineers carrier support using leaked PII
+  Step 2  Carrier ports victim's number to attacker's SIM (SIM swap)
+  Step 3  Attacker enables CFNR on their new SIM → victim's original SIM goes dark
+  Step 4  Attacker requests "forgot password" on bank/email account
+  Step 5  OTP call is routed to attacker's device
+  Step 6  Account is compromised. No malware required.
+```
+
+**Impact:** Full account takeover of any service using SMS or call-based 2FA — banking, email, social media.
+
+**Defense:** Set a carrier account PIN. Enable SIM lock. Use authenticator apps (TOTP) over SMS/call-based 2FA wherever possible.
+
+---
+
+### 🟡 Scenario 3 — Repair Shop CFB Exploit
+
+```
+Attack Chain:
+  Step 1  Victim hands phone to repair technician (trusted context)
+  Step 2  Technician dials *67*<number># → CFB activated quietly
+  Step 3  Victim receives phone back, doesn't notice
+  Step 4  While victim is on any call, all other incoming calls silently route to attacker
+```
+
+**Impact:** Selective interception of calls during busy periods — less visible, harder to detect.
+
+**Defense:** Always run all three `*#` checks after any device repair or handoff.
+
+---
+
+### 🟡 Scenario 4 — Social Engineering via Fake Tech Support
+
+```
+Attack Chain:
+  Step 1  Attacker calls victim, claims to be "carrier technical support"
+  Step 2  Instructs victim to dial *21*<attacker_number># to "fix a network issue"
+  Step 3  Victim unknowingly activates CFU themselves
+  Step 4  Attacker now receives all victim's calls
+```
+
+**Impact:** Victim's calls forwarded with their own cooperation, making it harder to dispute with the carrier.
+
+**Defense:** Never dial `*` or `#` codes given by strangers. Carriers will **never** ask you to do this.
+
+---
+
+## 📱 Android vs iOS Differences
 
 | Feature | Android | iPhone (iOS) |
-|--------|---------|--------------|
-| USSD code popup | ✅ Shows result instantly on screen | ⚠️ May route through carrier instead |
+|---------|---------|--------------|
+| USSD response | Usually immediate popup | Carrier dependent; may vary |
 | `*#21#` support | ✅ Fully supported | ⚠️ Partially — depends on carrier |
-| Recommended alternative | Dial pad codes | **Settings → Phone → Call Forwarding** |
+| Reliable manual path | Dialer USSD codes | **Settings → Phone → Call Forwarding** |
+| Recommendation | Use USSD + settings | Use Settings view first, then test with real call |
+
+**iPhone users:** If USSD codes don't work reliably, go to **Settings → Phone → Call Forwarding** — this reads directly from your carrier profile and is the most reliable check on iOS.
+
+---
+
+## 🧰 Troubleshooting Guide
+
+### "Code failed" / "MMI invalid"
+- Retry with strong signal and an active SIM.
+- Remove any spaces or extra symbols from the code.
+- Some MVNOs or roaming contexts block specific USSD queries — contact carrier.
+
+### "Forwarding turns back on after cancel"
+- Check if carrier voicemail auto-re-enables CFNR/CFB.
+- Ask carrier to remove all conditional forwarding and voicemail provisioning temporarily.
+- If it persists, suspect account-level tampering — escalate immediately.
+
+### "I still miss calls after disabling everything"
+- Test with airplane mode off and Wi-Fi calling toggled.
+- Verify DND (Do Not Disturb), call blocking apps, and spam filters.
+- Run controlled tests from two different carrier networks.
+
+---
+
+## 📞 When to Contact Your Carrier
+
 Contact support when:
 
 - Cancel codes report success but forwarding remains active.
-- Unknown destination numbers persist.
-- Forwarding reactivates repeatedly.
+- Unknown destination numbers persist after cancellation.
+- Forwarding reactivates repeatedly on its own.
 - You suspect SIM swap, SIM cloning, or account compromise.
 
-**iPhone Users:** If USSD codes don't work as expected, go to:
-> **Settings → Phone → Call Forwarding**
 When contacting support, request:
 
-This will show you exactly whether forwarding is on or off, with no need for dial codes.
-1. Full forwarding status for voice service.
+1. Full forwarding status for your voice service (CFU/CFB/CFNR).
 2. Timestamped change history (if available).
-3. Removal/reset of all CFU/CFNR/CFB rules.
+3. Removal and reset of all forwarding rules.
 4. Account PIN reset and SIM revalidation.
+
+| Carrier | Support Number |
+|---------|---------------|
+| Jio | 199 |
+| Airtel | 121 |
+| Vi (Vodafone Idea) | 199 |
+| BSNL | 1800-180-1503 |
 
 ---
 
-## 📋 Common Carrier Voicemail Numbers (India)
-## 🇮🇳 India voicemail quick list (example)
+## 🇮🇳 India Voicemail Quick List
 
-If you see a forwarding number you don't recognize, it might simply be your carrier's default voicemail service — which is completely normal.
-> This list is illustrative and may change. Always verify with carrier websites/apps.
+If you see a forwarding number you don't recognize, it may simply be your carrier's default voicemail — which is completely normal. Verify before canceling.
 
-| Carrier | Voicemail Number |
-|---------|-----------------|
-| **Jio** | +91-40-4121-0000 or 1800-889-9999 |
-| Carrier | Common voicemail number |
+> This list is illustrative and may change. Always verify with official carrier websites or apps.
+
+| Carrier | Common Voicemail Number |
 |---------|--------------------------|
 | **Jio** | +91-40-4121-0000 / 1800-889-9999 |
 | **Airtel** | +91-98-1800-0543 |
 | **Vi (Vodafone Idea)** | +91-98-2009-8200 |
 | **BSNL** | 56789 |
 
-> If the forwarded number matches your carrier's voicemail, there is no cause for concern. You can still disable it using `##21#` if you prefer.
-
 ---
 
-## 📞 When to Contact Your Carrier
-## 🔐 Hardening checklist
+## 🔐 Hardening Checklist
 
-In some situations, dial codes alone may not be enough. Contact your carrier's customer support if:
-- [ ] Set a strong screen lock (PIN/biometric).
-- [ ] Lock SIM with a SIM PIN.
-- [ ] Enable account-level telecom PIN where available.
-- [ ] Review forwarding settings monthly.
-- [ ] Re-check after travel, eSIM migration, or device repair.
+- [ ] Set a strong screen lock (PIN / biometric).
+- [ ] Enable a SIM PIN to prevent unauthorized SIM use.
+- [ ] Set a carrier account PIN to protect against SIM swap.
+- [ ] Review all three forwarding codes monthly.
+- [ ] Re-check after travel, eSIM migration, device repair, or any handoff.
+- [ ] Switch to TOTP-based 2FA (e.g., Google Authenticator) away from SMS/call-based 2FA.
 - [ ] Use only official carrier apps/portals for line management.
+- [ ] Never dial `*` or `#` codes given verbally by strangers.
 
-- `##21#` does **not** successfully cancel forwarding
-- The forwarding number is **unrecognized** and does not match any voicemail service
-- Forwarding **reactivates** after you cancel it
-- You suspect **SIM cloning** or **account-level tampering**
 ---
 
-| Carrier | Support Number |
-|---------|---------------|
-| Jio | 199 |
-| Airtel | 121 |
-| Vi | 199 |
-| BSNL | 1800-180-1503 |
 ## ❓ FAQ
 
----
-**Q: Is all forwarding suspicious?**  
-No. Voicemail and business routing are common legitimate uses.
+**Q: Is all forwarding suspicious?**
+No. Voicemail and business call routing are common legitimate uses. Always verify the destination number before canceling.
 
-**Q: Can malware enable forwarding?**  
-In many cases, unauthorized changes require account/device access rather than advanced malware.
+**Q: Can malware enable forwarding remotely?**
+In most documented cases, unauthorized changes require physical device access or carrier-account compromise rather than sophisticated malware. The threat model is usually social engineering, not zero-day exploits.
 
-## 🔐 Final Security Tips
-**Q: Do these codes work worldwide?**  
-GSM/MMI behavior is carrier-dependent. Codes are common but not universal.
+**Q: Do these codes work worldwide?**
+GSM/MMI USSD behavior is carrier-dependent. The codes listed here are standard and work on most GSM networks globally, but specific MVNOs or CDMA carriers may not support them.
 
-1. **Never dial unknown `*` or `#` codes** from strangers — USSD codes can modify your phone settings instantly without confirmation.
-2. **Never share OTPs** — Not with anyone, not even callers claiming to be your bank or telecom provider.
-3. **Lock your phone** — Physical access is the most common way call forwarding gets misconfigured. A strong PIN or biometric lock is your first line of defense.
-4. **Run a security check regularly** — Make it a habit to dial `*#21#` every few weeks to verify your settings.
-5. **Check after repairs** — Always verify your call forwarding settings after handing your phone to a repair shop.
-6. **Use your carrier's official app** — Most carriers (Jio, Airtel, Vi) have apps where you can review and manage call settings securely.
-**Q: Should I disable voicemail for security?**  
-Not always necessary. Safer approach: verify destination, secure carrier account, and monitor changes.
+**Q: Should I disable voicemail entirely for security?**
+Not always necessary. The safer approach: verify the destination number, secure your carrier account with a PIN, and monitor for unexpected changes monthly.
+
+**Q: Why does CFU survive a phone reboot?**
+Because CFU rules are stored in the **HLR** (carrier database), not on your device. They persist regardless of phone state.
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome! If you have:
-- Carrier voicemail numbers for other countries
-- Carrier-specific USSD code variations
-- iOS/Android version-specific behavior notes
 Contributions are welcome. Helpful additions:
 
-Please open a **Pull Request** or file an **Issue**. Let's make this guide more comprehensive for everyone.
-- Carrier-specific behavior by country/region.
-- Verified voicemail destination references.
-- iOS/Android version differences and screenshots.
+- Carrier-specific USSD behavior by country/region.
+- Verified voicemail destination number references.
+- iOS/Android version differences with screenshots.
 - Better troubleshooting flows for MVNO users.
+- Attack scenario additions with documented real-world cases.
 
-Open a Pull Request or Issue with reproducible details (carrier, country, device, OS version, and observed output).
+Open a **Pull Request** or **Issue** with reproducible details: carrier, country, device, OS version, and observed output.
 
 ---
 
 ## 📚 Additional Resources
-## 📚 Additional resources
 
-- [GSMA — Understanding USSD](https://www.gsma.com/)
+- [GSMA — GSM Standards & USSD](https://www.gsma.com/)
 - [TRAI (India) — Consumer Information](https://www.trai.gov.in/)
-- Your mobile carrier's official support page
-- [GSMA](https://www.gsma.com/)
-- [TRAI (India)](https://www.trai.gov.in/)
+- [3GPP TS 22.082 — Call Forwarding Supplementary Services Specification](https://www.3gpp.org/)
 - Your carrier's official support portal
 
 ---
@@ -390,11 +414,8 @@ Open a Pull Request or Issue with reproducible details (carrier, country, device
 
 ### 🛡️ Your Phone. Your Calls. Your Privacy.
 
-*In a world where your silence can be stolen,*
-*awareness is the most powerful weapon you own.*
-*Stay curious. Stay cautious. Stay in control.*
+*Security improves when checks become habits.*
 
-**— Because security isn't a feature. It's a right.**
-Security improves when checks become habits.
+**Understand the protocol. Know the threat. Stay in control.**
 
 </div>
