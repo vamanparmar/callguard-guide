@@ -16,6 +16,7 @@
 - [What Is Call Forwarding?](#-what-is-call-forwarding)
 - [How Call Forwarding Works](#-how-call-forwarding-works)
 - [Technical Deep Dive — USSD & GSM Internals](#-technical-deep-dive--ussd--gsm-internals)
+- [Visual Diagrams](#-ussd--ss7-architecture--visual-flow)
 - [Types of Call Forwarding](#-types-of-call-forwarding)
 - [Quick Reference — All Codes](#-quick-reference--all-codes)
 - [Step-by-Step: Check Your Line in 2 Minutes](#-step-by-step-check-your-line-in-2-minutes)
@@ -113,6 +114,29 @@ HLR (Home Location Register)  ◄──── Stores your forwarding rules
      │  Returns CF status
      ▼
 Response rendered on your screen
+```
+
+#### 📊 USSD / SS7 Architecture — Visual Flow
+
+```mermaid
+sequenceDiagram
+    participant U as 📱 Your Handset
+    participant BSS as 📡 BSS<br/>(Base Station)
+    participant MSC as 🔀 MSC<br/>(Mobile Switching Centre)
+    participant HLR as 🗄️ HLR<br/>(Home Location Register)
+    participant VLR as 📋 VLR<br/>(Visitor Location Register)
+
+    U->>BSS: Dial *#21# (MMI string)
+    BSS->>MSC: USSD-Request via SS7/MAP
+    MSC->>VLR: Check subscriber session
+    VLR-->>MSC: Session confirmed
+    MSC->>HLR: MAP-Process-USSD-Request<br/>(Query CFU status)
+    HLR-->>MSC: CF Rules for subscriber<br/>(CFU / CFB / CFNR + destination)
+    MSC-->>BSS: USSD-Response (forwarding status)
+    BSS-->>U: Display result on screen
+
+    Note over HLR: Forwarding rules stored here<br/>persist even if phone is OFF
+    Note over U,HLR: Entire flow uses SS7 signaling plane<br/>not voice or mobile data
 ```
 
 ### HLR and VLR — Where Forwarding Lives
@@ -248,6 +272,31 @@ Attack Chain:
 **Impact:** Full account takeover of any service using SMS or call-based 2FA — banking, email, social media.
 
 **Defense:** Set a carrier account PIN. Enable SIM lock. Use authenticator apps (TOTP) over SMS/call-based 2FA wherever possible.
+
+#### 📊 SIM Swap + CFNR Attack — Visual Flow
+
+```mermaid
+flowchart TD
+    A([🕵️ Attacker]) -->|Collects victim PII\nfrom data breach / OSINT| B[📞 Call Carrier Support]
+    B -->|Social engineers agent\nwith fake identity proof| C[🔄 Carrier Performs SIM Swap]
+    C --> D[Victim SIM goes DARK ❌\nAttacker SIM is now ACTIVE ✅]
+    D --> E[Attacker enables CFNR\non new active SIM]
+    E --> F[🏦 Request Password Reset\non Bank / Email / Social account]
+    F -->|Service sends OTP\nvia phone call| G[📲 OTP routed to Attacker's device]
+    G --> H[🔓 Account Fully Compromised]
+
+    style A fill:#c0392b,color:#fff
+    style H fill:#c0392b,color:#fff
+    style D fill:#e67e22,color:#fff
+    style G fill:#e67e22,color:#fff
+    style C fill:#f39c12,color:#000
+
+    I([🛡️ Defenses]):::defense --> J[Set carrier account PIN]
+    I --> K[Enable SIM lock]
+    I --> L[Use TOTP authenticator\ninstead of call or SMS 2FA]
+
+    classDef defense fill:#27ae60,color:#fff
+```
 
 ---
 
